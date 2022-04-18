@@ -16,4 +16,4 @@ SUB_FONT_BOLD = ("Verdana",8,"bold")
 
 KEY_QUIT = "Escape"
 KEY_BACK = "b"
-
+KEY_ENTER = 'Return'
