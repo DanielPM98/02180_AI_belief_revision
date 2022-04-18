@@ -1,1 +1,1 @@
-"# 02180_AI_belief_revision" 
+# 02180_AI_belief_revision
