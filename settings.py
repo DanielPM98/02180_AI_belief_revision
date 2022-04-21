@@ -7,11 +7,12 @@ COLOR_PALETTE = {
     'window': '#F3F9D2',
     'sub_window': '#92B4A7',
     'sub_background': '#93827F',
+    'sub_buttoms': '#8cbfac'
 }
 
 FONT = ("Verdana",40,"bold")
 TITLE_FONT = ("Verdana",25,"bold")
-SUB_FONT = ("Verdana",8)
+SUB_FONT = ("Verdana",10)
 SUB_FONT_BOLD = ("Verdana",8,"bold")
 
 KEY_QUIT = "Escape"

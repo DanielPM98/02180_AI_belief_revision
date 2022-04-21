@@ -1,6 +1,6 @@
-from cgitb import text
 from tkinter import *
 import tkinter as tk
+
 from beliefBase import BeliefBase, Belief
 from settings import *
 
@@ -14,7 +14,7 @@ class Screen(Tk):
 
         # Display variables
         self.displayText = StringVar()
-        self.displayText.set('BELIEF BASE')
+
 
         self.init_grid()
 
@@ -32,61 +32,57 @@ class Screen(Tk):
 
         displayCell = Frame(window, bg=COLOR_PALETTE['window'])
         displayCell.rowconfigure(0, minsize=300, weight=1)
-        displayCell.columnconfigure(0, minsize=300, weight=1)
-        displayCell.grid(row=0, column=0, padx=20, pady=20, sticky='ew')
+        displayCell.columnconfigure(0, minsize=100, weight=1)
+        displayCell.grid(row=0, column=0, columnspan=2, padx=20, pady=20, sticky='ew')
         
         self.display = Label(displayCell, bg=COLOR_PALETTE['window'], textvariable=self.displayText, font=SUB_FONT)
-        self.display.grid(sticky='nw')
+        self.display.grid(sticky='n')
 
         # Input cell for proposition and (commands)?
-        self.entryCell = Entry(window, bg=COLOR_PALETTE['window'], font=SUB_FONT, width=80)
-        self.entryCell.grid(row=2, column=0, padx=20, sticky='w')
+        self.entryCell = Entry(window, bg=COLOR_PALETTE['window'], font=SUB_FONT, width=65)
+        self.entryCell.grid(row=2, column=0, columnspan=2, padx=20, sticky='w')
 
         # Possible logic operators
         operatorFrame = Frame(window, bg=COLOR_PALETTE['background'])
-        operators = ['NEG', 'OR', 'AND', '->', '<->']
+        operators = ['NEG', 'OR', 'AND', '->']
         operators_commands = [self.insertNEG, self.insertOR, self.insertAND,
-                              self.insertIMPLICATION, self.insertBIMPLICATION]
+                              self.insertIMPLICATION]
         for i, operator in enumerate(operators):
             button = Button(operatorFrame, bg=COLOR_PALETTE['buttoms'],
                             text=operator, command=operators_commands[i],
                             font=SUB_FONT_BOLD, relief=tk.RAISED)
+            button.config(width = 5)
             button.grid(row=0, column=i, padx=5, pady=5)
-        operatorFrame.grid(row=3, column=0, padx=20, pady=20)
+        operatorFrame.grid(row=3, column=0, padx=15, pady=20, sticky='w')
 
         # Complex fucntions buttons
         clear_buttons_frame = Frame(window, bg=COLOR_PALETTE['background'])
-        clear_buttons = ['CLEAR', 'CLEAR ALL']
+        clear_buttons = ['CLEAR ONE', 'CLEAR ALL']
         clear_commands = [self.clear_idx, self.clear_all]
         for i, clear in enumerate(clear_buttons):
-            button = Button(clear_buttons_frame, bg=COLOR_PALETTE['buttoms'],
+            button = Button(clear_buttons_frame, bg=COLOR_PALETTE['sub_buttoms'],
                             text=clear, command=clear_commands[i],
                             font=SUB_FONT_BOLD, relief=tk.RAISED)
-            button.grid(row=3, column=i, padx=5, pady=5, sticky='ew')
-        clear_buttons_frame.grid(row=3, column=3, padx=20, pady=20)
-
-
+            button.config(width = 10)
+            button.grid(row=3, column=i, padx=5, pady=5)
+        clear_buttons_frame.grid(row=3, column=1, padx=15, pady=20, sticky='e')
+    
 
     def run(self):
         self._update()
         self.update_idletasks()
         self.mainloop()
      
-
     def key_down(self, event):
         key = event.keysym
-        #print(event)
         if key == KEY_QUIT: exit()
-        if key == KEY_ENTER: 
-            if len(self.entryCell.get()) != 0: ### TODO CHECK IF THE PROPOSITION IS VALID 
+        if key == KEY_ENTER:
+            if len(self.entryCell.get()) != 0:
                 self.get_entry()
-        if key == KEY_BACK: 
-            self.newWin.destroy()
-            self.newWin.update()
 
     def _update(self):
         # Display
-        self.displayText.set('BELIEF BASE\n'+str(self.beliefBase))
+        self.displayText.set('ENTER PROPOSITION TO REVISE THE BELIEF BASE SYSTEM \n"All beliefs are displayed with its corresponding order"\n--------------------------------------------------------------------------\n'+str(self.beliefBase))
         self.display.grid()
 
     def insertNEG(self):
@@ -103,24 +99,23 @@ class Screen(Tk):
 
     def insertIMPLICATION(self):
         pos = self.entryCell.index(INSERT)
-        self.entryCell.insert(pos,'->')
+        self.entryCell.insert(pos,'>>')
     
-    def insertBIMPLICATION(self):
-        pos = self.entryCell.index(INSERT)
-        self.entryCell.insert(pos,'<->')
+    # def insertBIMPLICATION(self):
+    #     pos = self.entryCell.index(INSERT)
+    #     self.entryCell.insert(pos,'<->')
 
     def clear_all(self):
         self.temp_prop, self.temp_order = None, None
-        self.beliefBase = BeliefBase()
+        self.beliefBase.clear()
         self.run()
 
     def clear_idx(self):
         SubScreen(self, f'Select the belief to delete (1-{len(self.beliefBase)}) in ascending order: ', 1)
-        
         self.run()
 
     def get_entry(self):
-        self.temp_prop = self.entryCell.get()
+        self.temp_prop = (self.entryCell.get()).lower()
         SubScreen(self, 'Introduce the order of the proposition (0-1): ', 0)
 
     def get_sub_win_input(self, _in, type):
@@ -134,9 +129,6 @@ class Screen(Tk):
             self.beliefBase.delete_belief_idx(int(_in)-1)
             self._update()
        
-
-        
-
 
 class SubScreen(Toplevel):
     def __init__(self, parent, label, type):
@@ -165,7 +157,6 @@ class SubScreen(Toplevel):
 
     def key_down(self, event):
         key = event.keysym
-        #print(event)
         if key == KEY_QUIT: self.destroy()
         if key == KEY_ENTER: self.get_entry()
 
@@ -174,8 +165,6 @@ class SubScreen(Toplevel):
         if len(self.content) != 0:
             whole_display.get_sub_win_input(self.content, self.type)
             self.destroy()
-
-
 
 
 
