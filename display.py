@@ -55,7 +55,7 @@ class Screen(Tk):
             button.grid(row=0, column=i, padx=5, pady=5)
         operatorFrame.grid(row=3, column=0, padx=15, pady=20, sticky='w')
 
-        # Complex fucntions buttons
+        # Complex fucntions buttons(~r | p | s) & (~p | r ) & (~s | r ) & ~r
         clear_buttons_frame = Frame(window, bg=COLOR_PALETTE['background'])
         clear_buttons = ['CLEAR ONE', 'CLEAR ALL']
         clear_commands = [self.clear_idx, self.clear_all]
@@ -103,7 +103,7 @@ class Screen(Tk):
     
     # def insertBIMPLICATION(self):
     #     pos = self.entryCell.index(INSERT)
-    #     self.entryCell.insert(pos,'<->')
+    #     self.entryCell.insert(pos,'<=>')
 
     def clear_all(self):
         self.temp_prop, self.temp_order = None, None
@@ -123,7 +123,7 @@ class Screen(Tk):
             self.entryCell.delete(0, END)
             self.temp_order = float(_in)
             temp_belief = Belief(self.temp_prop, self.temp_order)
-            self.beliefBase.add_belief(temp_belief)
+            self.beliefBase.revise(temp_belief)
             self._update()
         elif type == 1:
             self.beliefBase.delete_belief_idx(int(_in)-1)

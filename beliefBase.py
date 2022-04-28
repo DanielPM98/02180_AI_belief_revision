@@ -1,4 +1,6 @@
 from sympy.logic.boolalg import to_cnf, Or
+from entailment import *
+from utils import _to_cnf # TODO IMPLEMENT CUSTOM CNF FUNCTION TO ALL AND TEST FOR BI-IMPLICATION
 
 
 def _check_order(n):
@@ -53,12 +55,9 @@ class BeliefBase:
 
     def delete_belief(self, other):
         """
-        Delete a belief that is equal to 'other'
+        Delete a beliefs equal to 'other'
         """
-        for belief in self.beliefs:
-            if belief.proposition == other.proposition:
-                self.beliefs.remove(belief)
-                break
+        self.beliefs = [belief for belief in self.beliefs if belief.proposition != other.proposition]                
 
     def delete_belief_idx(self, idx):
         """
@@ -67,19 +66,32 @@ class BeliefBase:
         self.beliefs.pop(idx)
 
 
-    def revise(self):
-        pass
+    def revise(self, other):
+        prop_cnf = to_cnf(other.proposition)
+        _check_order(other.order)
+
+        # Check for contradiction in proposition
+        if not entailment([], ~prop_cnf):
+            # If tautology change order to maximum (always true)
+            if entailment([], prop_cnf):
+                other.order = 1
+            else:
+                # Levi Identity for revision
+                self.contract(Belief(~to_cnf(other.proposition), other.order))
+                self.expand(other)
+
+        
 
     def highest_degree(self, other):
         """
         Returns highest order from the belief in the belief base which entails prop
         """
         prop_cnf = to_cnf(other.proposition)
-        if entails([], prop_cnf): # TODO check proper implementation of entails and for tautology
+        if entailment([], prop_cnf):
             return 1
 
         for belief in self.beliefs:
-            if entails(belief.proposition, prop_cnf):
+            if entailment(belief.proposition, prop_cnf):
                 return belief.order
         return 0
 
@@ -87,20 +99,22 @@ class BeliefBase:
         """
         Removes any belief from the belief base needed so there are no contradictions
         """
-        # Set of maximal subset of KB that not imply p
+        # Set of maximal subset of KB that not imply other
         prop_cnf = to_cnf(other.proposition)
         _check_order(other.order)
+        
+        _to_delete = []
+        for i, belief in enumerate(self.beliefs):
+            if entailment(self.beliefs[0:i+1], prop_cnf) and other > belief:
+                _to_delete.append(belief)
 
-        for belief in self.beliefs:
-            if belief > other:
-                prop_cnf_hd = self.highest_degree(prop_cnf)
-                props_disjunction = Or(prop_cnf_hd, belief.proposition)
-                props_disjunction_hd = self.highest_degree(props_disjunction)
-                if props_disjunction == props_disjunction_hd:
-                    self.add_belief(Belief(belief, other.order))
+        self.beliefs = [belief for belief in self.beliefs if belief not in _to_delete]
 
-    def expand(self):
-        pass
+    def expand(self, other):
+        prop_cnf = other.proposition
+        _check_order(other.order)
+
+        self.add_belief(other)
 
     def clear(self):
         """
@@ -115,5 +129,3 @@ class BeliefBase:
 
     def __len__(self):
         return len(self.beliefs)
-
-
