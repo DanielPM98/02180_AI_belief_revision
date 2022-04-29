@@ -15,7 +15,6 @@ class Screen(Tk):
         # Display variables
         self.displayText = StringVar()
 
-
         self.init_grid()
 
         self.temp_prop, self.temp_order = None, None
@@ -38,13 +37,13 @@ class Screen(Tk):
         self.display = Label(displayCell, bg=COLOR_PALETTE['window'], textvariable=self.displayText, font=SUB_FONT)
         self.display.grid(sticky='n')
 
-        # Input cell for proposition and (commands)?
+        # Input cell for propositions
         self.entryCell = Entry(window, bg=COLOR_PALETTE['window'], font=SUB_FONT, width=65)
         self.entryCell.grid(row=2, column=0, columnspan=2, padx=20, sticky='w')
 
         # Possible logic operators
         operatorFrame = Frame(window, bg=COLOR_PALETTE['background'])
-        operators = ['NEG', 'OR', 'AND', '->']
+        operators = ['NEG', 'OR', 'AND', '=>']
         operators_commands = [self.insertNEG, self.insertOR, self.insertAND,
                               self.insertIMPLICATION]
         for i, operator in enumerate(operators):
@@ -55,7 +54,7 @@ class Screen(Tk):
             button.grid(row=0, column=i, padx=5, pady=5)
         operatorFrame.grid(row=3, column=0, padx=15, pady=20, sticky='w')
 
-        # Complex fucntions buttons(~r | p | s) & (~p | r ) & (~s | r ) & ~r
+        # Screen handler buttons
         clear_buttons_frame = Frame(window, bg=COLOR_PALETTE['background'])
         clear_buttons = ['CLEAR ONE', 'CLEAR ALL']
         clear_commands = [self.clear_idx, self.clear_all]
@@ -67,12 +66,13 @@ class Screen(Tk):
             button.grid(row=3, column=i, padx=5, pady=5)
         clear_buttons_frame.grid(row=3, column=1, padx=15, pady=20, sticky='e')
     
-
+    # Main method for updating the display
     def run(self):
         self._update()
         self.update_idletasks()
         self.mainloop()
-     
+
+    # Key handler 
     def key_down(self, event):
         key = event.keysym
         if key == KEY_QUIT: exit()
@@ -100,10 +100,6 @@ class Screen(Tk):
     def insertIMPLICATION(self):
         pos = self.entryCell.index(INSERT)
         self.entryCell.insert(pos,'>>')
-    
-    # def insertBIMPLICATION(self):
-    #     pos = self.entryCell.index(INSERT)
-    #     self.entryCell.insert(pos,'<=>')
 
     def clear_all(self):
         self.temp_prop, self.temp_order = None, None
@@ -131,6 +127,9 @@ class Screen(Tk):
        
 
 class SubScreen(Toplevel):
+    """
+    Sub-display for better understanding and design
+    """
     def __init__(self, parent, label, type):
         super().__init__(parent)
         self.label = label

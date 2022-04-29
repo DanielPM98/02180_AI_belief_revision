@@ -1,12 +1,26 @@
-from sympy.logic.boolalg import to_cnf, Or, And, Not
+from sympy.logic.boolalg import Or, And, to_cnf
 from itertools import combinations
-import sympy
 
 
 
 def entailment(belief_base, prop):
+    """
+    Description: 
+        Checks for entailment between the beliefs in the belief base and the proposition to 
+        introduce to the system.
+    Input:
+        belief_base <list>: list of objects corresponding to the Belief class in the belief base
+        prop <str/SympyExpression>: (both types work and are supported) proposition to check
+            for entailment with the belief base
+    Returns:
+        <bool>: the output is True in case of entailment and False otherwise 
+
+    *Note*: the comented lines are from a different type of implemtation with lists instead of sets
+        which didn't perform as expected and had to discard but we decided to show the work done anyways.
+        Hope it is not an inconvenience
+    """
     clauses = []
-    
+    prop = to_cnf(prop)
     for belief in belief_base:
         b_cnf = to_cnf(belief.proposition)
         if isinstance(b_cnf, And):
@@ -14,19 +28,20 @@ def entailment(belief_base, prop):
         else:
             clauses.append(b_cnf)
    
-    clauses += [to_cnf(~prop)]
+    clauses += dissociate(to_cnf(~prop))
+
+    if False in clauses:
+        return True
 
     result = set()
     #result = []
     while True:
-        print("clauses", clauses)
         pairs = list(combinations(clauses,2))
-        print('Pairs: ', pairs)
+
         #res_new = []
         for i,j in pairs:
             temp = pl_resolve(i,j)
             if False in temp:
-                print('WHYYYY')
                 return True
             # if len(temp) != 0:
             #     res_new.append(temp)
@@ -38,16 +53,26 @@ def entailment(belief_base, prop):
         if result.issubset(set(clauses)):
             return False
         # if all(x in clauses for x in result):
-        #     print('FALSE BITCHES')
         #     return False
-     
+
         for element in result:
             if element not in clauses:
                 clauses.append(element)
 
 
-
 def pl_resolve(left, right):
+    """
+    Description:
+        Checks the pair of clauses and compare its elements one by one. In the case complementaries
+        show it removes them and creates a new clause. Corresponds to the Full-Resolution Rule
+        explained in class.
+    Input:
+        left <SympyExpression>: left clause in the pair, elements separated by '|'
+        right <SympyExpression>: right clause in the pair, elements separated by '|'
+    Returns:
+        result <list>: contains all the new clauses generated from comparison, in case the empty clause
+            is reached, one of those values will be False
+    """
     result = []
     
     left_syms = dissociate(left)
@@ -72,6 +97,14 @@ def pl_resolve(left, right):
     
 
 def dissociate(x):
+    """
+    Description:
+        Checks the expression and returns the elements separated for the Full-Resolution Rule implementation
+    Input:
+        x <SympyExpression>: expression to dissociate
+    Returns:
+        out <list>: elements separated
+    """
     if len(list(x.args)) < 2:
         out = [x]
     else:
@@ -80,67 +113,13 @@ def dissociate(x):
 
 
 def _remove_sym(sym, clause):
+    """
+    Description:
+        Removes the element desired from the clause
+    Input:
+        sym <SympyExpression>: element to remove
+        clause <list>: list containing all elements from a clause
+    Returns:
+        <list>: returns the input clause without the element wanted to be removed
+    """
     return [s for s in clause if s != sym]
-
-def recombine(pairs):
-    for i in range(len(pairs)):
-        if isinstance(pairs,list):
-            if len(pairs[i])>1:
-                x=0
-                while x < len(pairs[i])-1:
-                    
-                    pairs[i][0]=Or(pairs[i][0], pairs[i][x+1])
-                    
-                    x+=1
-                pairs[i]=pairs[i][0]
-            else:
-                pairs[i]=pairs[i][0]
-
-    return pairs
-
-
-def singles(clauses):
-    
-    for i in range(len(clauses)-1):
-        x=0
-        
-        while x <= len(clauses)-1:
-            if i==x:
-                pass
-            else:
-                if isinstance(clauses[i],str) or isinstance(clauses[x],str):
-                    pass
-                else:
-                    if clauses[i]==~clauses[x]:
-                        clauses[i]="rem"
-                        clauses[x]="rem"
-                    else:
-                        pass
-            x+=1
-        x=0
-        while x <= len(clauses)-1:
-            if i==x:
-                pass
-            else:
-                if isinstance(clauses[i],str) or isinstance(clauses[x],str):
-                    pass
-                else:
-                    if clauses[i]==~clauses[x]:
-                        clauses[i]="rem"
-                        clauses[x]="rem"
-
-                    elif clauses[i]==clauses[x]:
-                        clauses[x]="rem"
-                        
-                    else:
-                        pass
-            x+=1
-    count=1
-    for i in clauses:
-        
-        if i=="rem":
-            
-            count+=1
-    for i in range(count-1):
-        clauses.remove("rem")
-    return clauses
